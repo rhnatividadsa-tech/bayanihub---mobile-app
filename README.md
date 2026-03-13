@@ -1,50 +1,85 @@
-# Welcome to your Expo app 👋
+# 🦸‍♂️ BayaniHub Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Welcome to the **BayaniHub Mobile App** repository! This is a React Native mobile application built with **Expo** and **TypeScript**. It serves as the mobile companion to the BayaniHub platform, allowing users to pledge donations and register as volunteers for disaster response and relief efforts.
 
-## Get started
+---
 
-1. Install dependencies
+## 📋 Prerequisites
 
-   ```bash
-   npm install
-   ```
+Before you clone and run this project, make sure you have the following installed on your machine:
 
-2. Start the app
+1. **[Node.js](https://nodejs.org/)** (LTS version recommended)
+2. **[Git](https://git-scm.com/)**
+3. **A Code Editor** (We highly recommend [Visual Studio Code](https://code.visualstudio.com/))
+4. **An Emulator or Physical Device**:
+   * **Android**: Install [Android Studio](https://developer.android.com/studio) and set up an Android Emulator.
+   * **iOS (Mac only)**: Install Xcode from the Mac App Store and set up an iOS Simulator.
+   * **Physical Device**: Download the **Expo Go** app from the Google Play Store or Apple App Store.
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 🚀 Getting Started
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Follow these steps to get the project running locally on your machine.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+### 1. Clone the repository
+Open your terminal and clone the project to your local machine:
 ```bash
-npm run reset-project
-```
+git clone <YOUR_GITHUB_REPO_URL_HERE>
+2. Navigate to the project directory
+Bash
+cd BayaniHubMobile
+3. Install dependencies
+Install all the required packages using npm:
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Bash
+npm install
+📱 Running the App
+Once your dependencies are installed, you can start the local Expo development server.
 
-## Learn more
+1. Start the Expo Server
+Run the following command in your terminal:
 
-To learn more about developing your project with Expo, look at the following resources:
+Bash
+npx expo start
+Note: This will open a Metro Bundler interface in your terminal and display a large QR code.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+2. Open the App on your preferred device:
+For Android Emulator: Press a in the terminal.
 
-## Join the community
+For iOS Simulator: Press i in the terminal (Mac only).
 
-Join our community of developers creating universal apps.
+For Physical Phone: Open the Expo Go app on your phone and scan the QR code displayed in the terminal.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+📁 Project Structure
+This project uses Expo Router for file-based navigation.
+
+Plaintext
+BayaniHubMobile/
+├── app/                  # Main application screens (Routing)
+│   ├── index.tsx         # Homepage
+│   ├── pledge.tsx        # Pledge Donation Screen
+│   └── volunteer.tsx     # Volunteer Registration Screen
+├── assets/               # Images, fonts, and icons
+├── declarations.d.ts     # TypeScript declarations for assets/routing
+├── package.json          # Project dependencies
+└── tsconfig.json         # TypeScript configuration
+🛠️ Troubleshooting & Common Issues
+1. "White Screen" or App not updating
+If the emulator shows a white screen or doesn't reflect your latest code changes, the Expo cache might be stuck. Stop the server (Ctrl + C) and run the clean start command:
+
+Bash
+npx expo start -c
+
+2. Red Squiggly Lines under expo-router in VS Code
+Because this project uses strict TypeScript, VS Code sometimes takes a moment to recognize the routing types. This is usually a "ghost error" if the app still runs fine on the emulator.
+
+The Fix: Press Ctrl + Shift + P (or Cmd + Shift + P on Mac), type Restart TS Server, and hit Enter.
+
+3. Image Import Errors
+If TypeScript complains that it cannot find image modules (e.g., Cannot find module '../assets/logo.png'), ensure that the declarations.d.ts file exists in the root directory and contains:
+
+TypeScript
+declare module "*.png";
+declare module "*.jpg";
+declare module "expo-router";
