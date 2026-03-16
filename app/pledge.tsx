@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Image, ScrollView, TextInput, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 // --- INTERFACES ---
 interface PledgeItem {
@@ -10,6 +10,10 @@ interface PledgeItem {
 
 export default function PledgeScreen() {
   const router = useRouter();
+  
+  // --- NEW: Read parameters from Expo Router ---
+  const { fromVolunteer } = useLocalSearchParams();
+  const cameFromVolunteer = fromVolunteer === 'true';
   
   // --- FORM STATES ---
   const [isSiteDropdownOpen, setIsSiteDropdownOpen] = useState<boolean>(false);
@@ -26,8 +30,9 @@ export default function PledgeScreen() {
 
   // --- VALIDATION & MODAL STATES ---
   const [showErrors, setShowErrors] = useState<boolean>(false);
-  const [showModal, setShowModal] = useState<boolean>(false); // Modal 1: Confirm Pledge
-  const [showVolunteerModal, setShowVolunteerModal] = useState<boolean>(false); // Modal 2: Volunteer Prompt
+  const [showModal, setShowModal] = useState<boolean>(false); 
+  const [showVolunteerModal, setShowVolunteerModal] = useState<boolean>(false); 
+  const [showSimpleSuccessModal, setShowSimpleSuccessModal] = useState<boolean>(false); 
   const [isConfirmed, setIsConfirmed] = useState<boolean>(false);
 
   // --- DATA ARRAYS ---
@@ -60,28 +65,33 @@ export default function PledgeScreen() {
   const handleInitialSubmit = () => {
     if (isSiteValid && isTimeValid && isItemsValid) {
       setIsConfirmed(false);
-      setShowModal(true); // Open confirmation modal
+      setShowModal(true); 
       setShowErrors(false);
     } else {
       setShowErrors(true);
     }
   };
 
-  // Step 2: Confirm the details
+  // Step 2: Confirm the details 
   const handleFinalConfirm = () => {
     if (isConfirmed) {
-      setShowModal(false); // Close confirmation modal
-      setShowVolunteerModal(true); // Open the "Do you want to volunteer?" modal
+      setShowModal(false); 
+      
+      if (cameFromVolunteer) {
+        setShowSimpleSuccessModal(true);
+      } else {
+        setShowVolunteerModal(true);
+      }
     }
   };
 
-  // Step 3: Handle the Volunteer Choice
+  // Step 3: Handle the Volunteer Choice 
   const handleVolunteerChoice = (choice: 'yes' | 'no') => {
     setShowVolunteerModal(false);
     if (choice === 'yes') {
-      router.push('/volunteer' as any); // Go to volunteer page
+      router.push({ pathname: '/volunteer', params: { fromPledge: 'true' } } as any); 
     } else {
-      router.push('/' as any); // Go back home
+      router.push('/' as any); 
     }
   };
 
@@ -133,19 +143,15 @@ export default function PledgeScreen() {
       )}
 
       {/* ========================================================= */}
-      {/* MODAL 2: VOLUNTEER PROMPT (UPDATED WITH CHECKMARK)        */}
+      {/* MODAL 2: VOLUNTEER PROMPT                                 */}
       {/* ========================================================= */}
       {showVolunteerModal && (
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { alignItems: 'center', padding: 30 }]}>
-            
-            {/* NEW STYLED CHECKMARK ICON */}
             <View style={styles.checkmarkIconCircle}>
               <Text style={styles.checkmarkIconText}>✓</Text>
             </View>
-
             <Text style={styles.modalTitle}>Pledge Confirmed!</Text>
-            
             <Text style={{ textAlign: 'center', fontSize: 16, color: '#444', marginBottom: 30, lineHeight: 22 }}>
               Thank you for your generous donation. Would you also like to volunteer your time to help with the relief efforts?
             </Text>
@@ -168,12 +174,39 @@ export default function PledgeScreen() {
         </View>
       )}
 
+      {/* ========================================================= */}
+      {/* MODAL 3: SIMPLE SUCCESS MODAL                               */}
+      {/* ========================================================= */}
+      {showSimpleSuccessModal && (
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { alignItems: 'center', padding: 40 }]}>
+            <View style={styles.checkmarkIconCircle}><Text style={styles.checkmarkIconText}>✓</Text></View>
+            <Text style={styles.modalTitle}>Pledge Confirmed!</Text>
+            <Text style={{ textAlign: 'center', fontSize: 15, color: '#4B5563', marginBottom: 30, lineHeight: 24 }}>
+              Thank you so much for your donation, and thank you again for volunteering! Your dedication makes a huge difference.
+            </Text>
+            {/* FIXED: Removed inherited flex: 2 so the text renders perfectly */}
+            <Pressable 
+              style={({ pressed }) => [{ paddingVertical: 16, backgroundColor: '#4273B8', borderRadius: 12, alignItems: 'center', width: '100%' }, pressed && { transform: [{ scale: 0.98 }] }]} 
+              onPress={() => router.push('/' as any)}
+            >
+              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>Return to Homepage</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
       {/* NAVIGATION BAR */}
       <View style={styles.navBar}>
         <View style={styles.navLeft}>
-          <Pressable onPress={() => router.push('/' as any)} style={({ pressed }) => [pressed && { opacity: 0.7 }]}>
+          <Pressable onPress={() => router.push('/' as any)} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 8 }, pressed && { opacity: 0.7 }]}>
             <Image source={require('../assets/logo_b.png')} style={styles.logoImage} resizeMode="contain" />
+            <Text style={styles.brandName}>BayaniHub</Text>
           </Pressable>
+        </View>
+
+        <View style={styles.navLinks}>
+          <Pressable onPress={() => router.push('/' as any)}><Text style={styles.navLink}>Home</Text></Pressable>
+          <Pressable onPress={() => router.push('/about' as any)}><Text style={styles.navLink}>About Us</Text></Pressable>
         </View>
 
         <View style={styles.navRight}>
@@ -188,16 +221,13 @@ export default function PledgeScreen() {
 
       {/* PAGE BODY */}
       <View style={styles.pageBody}>
-        <Image source={require('../assets/hero-bg.png')} style={styles.bgImage} resizeMode="cover" />
-        <View style={styles.bgOverlay} />
-
+        {/* CLEAN WHITE CONTENT CARD */}
         <View style={styles.contentWrapper}>
           
           <View style={styles.headerBannerGreen}>
             <Text style={styles.bannerText}>Pledge Donation</Text>
           </View>
 
-          {/* MASTER SCROLLVIEW */}
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
             
             {/* 1. LOCATION & TIME */}
@@ -304,22 +334,24 @@ export default function PledgeScreen() {
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
   
   // NAVBAR
   navBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: 90, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E5E7EB', paddingTop: 35 },
-  navLeft: { flexDirection: 'row', alignItems: 'center' },
-  logoImage: { width: 45, height: 45 },
-  navRight: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+  navLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  brandName: { fontSize: 18, fontWeight: 'normal', color: '#111827' },
+  navLinks: { flexDirection: 'row', gap: 15 },
+  navLink: { fontSize: 13, color: '#4B5563', fontWeight: '600' },
+  logoImage: { width: 35, height: 35 },
+  navRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconButton: { padding: 5 },
-  navIcon: { width: 28, height: 28, opacity: 0.7 },
+  navIcon: { width: 24, height: 24, opacity: 0.7 },
   userProfile: { flexDirection: 'row', alignItems: 'center' },
 
-  // BODY
-  pageBody: { flex: 1, minHeight: height - 90, position: 'relative', alignItems: 'center', paddingVertical: 20 },
-  bgImage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
-  bgOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#0F172A', opacity: 0.75 },
-  contentWrapper: { width: '95%', backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20, flex: 1, elevation: 10 },
+  // CLEANED UP BODY (No Image)
+  pageBody: { flex: 1, minHeight: height - 90, backgroundColor: '#F9FAFB', alignItems: 'center', paddingVertical: 20 },
+  contentWrapper: { width: '95%', backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB', padding: 20, flex: 1 },
+  
   headerBannerGreen: { backgroundColor: '#2D8A61', borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 20 },
   bannerText: { color: '#FFFFFF', fontSize: 22, fontWeight: 'bold' },
 
@@ -329,7 +361,7 @@ const styles = StyleSheet.create({
   errorBorder: { borderColor: '#E53E3E', borderWidth: 1, backgroundColor: '#FFF5F5' },
   errorText: { color: '#E53E3E', fontSize: 12, marginTop: 4, fontWeight: 'bold' },
   
-  pickerBox: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#E5E7EB', padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#CCCCCC' },
+  pickerBox: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#D1D5DB' },
   pickerText: { fontSize: 14, color: '#111' },
   pickerArrow: { fontSize: 14, fontWeight: 'bold', color: '#555' },
   dropdownMenu: { backgroundColor: '#FFF', borderRadius: 10, borderWidth: 1, borderColor: '#CCC', marginTop: 5 },
@@ -340,13 +372,13 @@ const styles = StyleSheet.create({
   itemHeaders: { flexDirection: 'row', gap: 10, marginBottom: 5, paddingHorizontal: 5 },
   qtyHeader: { width: 60, textAlign: 'center', fontSize: 13, fontWeight: 'bold', color: '#555' },
   nameHeader: { flex: 1, fontSize: 13, fontWeight: 'bold', color: '#555' },
-  itemsOuterFrame: { borderWidth: 1, borderColor: '#CCCCCC', borderRadius: 10, padding: 15, backgroundColor: '#FAFAFA' },
+  itemsOuterFrame: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 10, padding: 15, backgroundColor: '#F9FAFB' },
   itemRow: { flexDirection: 'row', gap: 10, marginBottom: 12, alignItems: 'center' },
-  qtyBox: { width: 60, backgroundColor: '#E5E7EB', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#CCCCCC', textAlign: 'center' },
-  nameBox: { flex: 1, backgroundColor: '#E5E7EB', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#CCCCCC' },
-  removeBtn: { width: 40, height: 40, backgroundColor: '#FFEDED', borderRadius: 8, borderWidth: 1, borderColor: '#FFB3B3', alignItems: 'center', justifyContent: 'center' },
+  qtyBox: { width: 60, backgroundColor: '#FFFFFF', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#D1D5DB', textAlign: 'center' },
+  nameBox: { flex: 1, backgroundColor: '#FFFFFF', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#D1D5DB' },
+  removeBtn: { width: 40, height: 40, backgroundColor: '#FFFFFF', borderRadius: 8, borderWidth: 1, borderColor: '#FFB3B3', alignItems: 'center', justifyContent: 'center' },
   removeBtnText: { color: '#CC0000', fontSize: 18, fontWeight: 'bold' },
-  addItemBtn: { alignSelf: 'flex-start', marginTop: 10, backgroundColor: '#E5E7EB', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#CCCCCC' },
+  addItemBtn: { alignSelf: 'flex-start', marginTop: 10, backgroundColor: '#FFFFFF', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#D1D5DB' },
   addItemBtnText: { fontSize: 12, fontWeight: 'bold', color: '#333' },
 
   // SUBMIT
@@ -354,10 +386,10 @@ const styles = StyleSheet.create({
   submitBtnText: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' },
 
   // MODALS
-  modalOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)', justifyContent: 'center', alignItems: 'center', zIndex: 9999 },
+  modalOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 9999 },
   modalContent: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 25, width: '90%', elevation: 10 },
   modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#111', marginBottom: 20, textAlign: 'center' },
-  summaryBox: { backgroundColor: '#F7F7F7', borderRadius: 12, padding: 15, borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 20 },
+  summaryBox: { backgroundColor: '#F9FAFB', borderRadius: 12, padding: 15, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 20 },
   summaryLabel: { fontSize: 12, fontWeight: 'bold', color: '#64748B', textTransform: 'uppercase', marginTop: 10, marginBottom: 4 },
   summaryValue: { fontSize: 15, color: '#0F172A', fontWeight: '500' },
   
@@ -374,23 +406,9 @@ const styles = StyleSheet.create({
   confirmBtnDisabled: { backgroundColor: '#94A3B8' },
   confirmBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
 
-  // NEW STYLED CHECKMARK ICON
   checkmarkIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F0FDF4',
-    borderWidth: 3,
-    borderColor: '#2D8A61',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    elevation: 2,
+    width: 80, height: 80, borderRadius: 40, backgroundColor: '#F0FDF4', borderWidth: 3, borderColor: '#2D8A61',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 20,
   },
-  checkmarkIconText: {
-    color: '#2D8A61',
-    fontSize: 40,
-    fontWeight: 'bold',
-    marginTop: -3,
-  },
+  checkmarkIconText: { color: '#2D8A61', fontSize: 40, fontWeight: 'bold', marginTop: -3 },
 });

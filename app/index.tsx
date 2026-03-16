@@ -11,11 +11,16 @@ export default function HomeScreen() {
       {/* NAVIGATION BAR */}
       <View style={styles.navBar}>
         <View style={styles.navLeft}>
-          <Image 
-            source={require('../assets/logo_b.png')} 
-            style={styles.logoImage} 
-            resizeMode="contain" 
-          />
+          <Pressable onPress={() => router.push('/' as any)} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 8 }, pressed && { opacity: 0.7 }]}>
+            <Image source={require('../assets/logo_b.png')} style={styles.logoImage} resizeMode="contain" />
+            <Text style={styles.brandName}>BayaniHub</Text>
+          </Pressable>
+        </View>
+
+        {/* NEW: Nav Links added for mobile */}
+        <View style={styles.navLinks}>
+          <Pressable onPress={() => router.push('/' as any)}><Text style={styles.navLink}>Home</Text></Pressable>
+          <Pressable onPress={() => router.push('/about' as any)}><Text style={styles.navLink}>About Us</Text></Pressable>
         </View>
 
         <View style={styles.navRight}>
@@ -96,11 +101,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, height: 90, backgroundColor: '#FFFFFF',
     borderBottomWidth: 1, borderBottomColor: '#E5E7EB', zIndex: 10, paddingTop: 35, 
   },
-  navLeft: { flexDirection: 'row', alignItems: 'center' },
-  logoImage: { width: 45, height: 45 },
-  navRight: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+  navLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  brandName: { fontSize: 18, fontWeight: 'normal', color: '#111827' },
+  navLinks: { flexDirection: 'row', gap: 15 },
+  navLink: { fontSize: 13, color: '#4B5563', fontWeight: '600' },
+  logoImage: { width: 35, height: 35 },
+  navRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconButton: { padding: 5 },
-  navIcon: { width: 28, height: 28, opacity: 0.7 },
+  navIcon: { width: 24, height: 24, opacity: 0.7 },
   userProfile: { flexDirection: 'row', alignItems: 'center' },
 
   pageBody: {

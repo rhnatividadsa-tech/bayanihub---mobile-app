@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Image, ScrollView, TextInput, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 // --- INTERFACES ---
 interface Item {
@@ -22,6 +22,10 @@ interface ConductChecks {
 
 export default function VolunteerScreen() {
   const router = useRouter();
+
+  // --- NEW: Read parameters from Expo Router ---
+  const { fromPledge } = useLocalSearchParams();
+  const cameFromPledge = fromPledge === 'true';
 
   // --- STEP STATE ---
   const [step, setStep] = useState<number>(1); 
@@ -118,9 +122,15 @@ export default function VolunteerScreen() {
       {/* NAVIGATION BAR */}
       <View style={styles.navBar}>
         <View style={styles.navLeft}>
-          <Pressable onPress={() => router.push('/' as any)} style={({ pressed }) => [pressed && { opacity: 0.7 }]}>
+          <Pressable onPress={() => router.push('/' as any)} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 8 }, pressed && { opacity: 0.7 }]}>
             <Image source={require('../assets/logo_b.png')} style={styles.logoImage} resizeMode="contain" />
+            <Text style={styles.brandName}>BayaniHub</Text>
           </Pressable>
+        </View>
+
+        <View style={styles.navLinks}>
+          <Pressable onPress={() => router.push('/' as any)}><Text style={styles.navLink}>Home</Text></Pressable>
+          <Pressable onPress={() => router.push('/about' as any)}><Text style={styles.navLink}>About Us</Text></Pressable>
         </View>
 
         <View style={styles.navRight}>
@@ -135,9 +145,7 @@ export default function VolunteerScreen() {
 
       {/* PAGE BODY */}
       <View style={styles.pageBody}>
-        <Image source={require('../assets/hero-bg.png')} style={styles.bgImage} resizeMode="cover" />
-        <View style={styles.bgOverlay} />
-
+        {/* CLEAN WHITE CONTENT CARD */}
         <View style={styles.contentWrapper}>
           <View style={styles.headerBanner}>
             <Text style={styles.bannerText}>Volunteer Registration</Text>
@@ -314,7 +322,7 @@ export default function VolunteerScreen() {
             )}
 
             {/* ========================================================= */}
-            {/* STEP 3: QUESTIONNAIRE (FULLY RESTORED TEXT)               */}
+            {/* STEP 3: QUESTIONNAIRE (ALIGNED & CLEANED)                 */}
             {/* ========================================================= */}
             {step === 3 && (
               <View style={styles.mainGridMobile}>
@@ -329,24 +337,26 @@ export default function VolunteerScreen() {
                   <Text style={[styles.progressLabel, styles.labelActive, {marginTop: 5}]}>[3] General Screening Questionnaire (Current Step)</Text>
                 </View>
 
-                <View style={styles.cardOutline}>
-                  <Text style={[styles.cardTitle, { marginBottom: 20 }]}>Self-Assessment Questionnaire</Text>
+                <View style={[styles.cardOutline, { paddingHorizontal: 0 }]}>
+                  <Text style={[styles.cardTitle, { marginBottom: 20, paddingHorizontal: 20 }]}>Self-Assessment Questionnaire</Text>
 
-                  {/* Basic Background */}
-                  <Text style={styles.qSectionTitle}>Basic Background</Text>
-                  <View style={styles.qQuestionRow}>
-                    <Text style={styles.qQuestionText}>Have you previously volunteered in disaster response?</Text>
-                    <View style={styles.pillToggle}>
-                      <Pressable style={[styles.pillOption, qDisaster === true && styles.pillOptionActive]} onPress={() => setQDisaster(true)}><Text style={[styles.pillText, qDisaster === true && styles.pillTextActive]}>YES</Text></Pressable>
-                      <Pressable style={[styles.pillOption, qDisaster === false && styles.pillOptionActive]} onPress={() => setQDisaster(false)}><Text style={[styles.pillText, qDisaster === false && styles.pillTextActive]}>NO</Text></Pressable>
+                  {/* Basic Background (Wrapped to match inner padding) */}
+                  <View style={{ paddingHorizontal: 20 }}>
+                    <Text style={styles.qSectionTitle}>Basic Background</Text>
+                    <View style={styles.qQuestionRow}>
+                      <Text style={styles.qQuestionText}>Have you previously volunteered in disaster response?</Text>
+                      <View style={styles.pillToggle}>
+                        <Pressable style={[styles.pillOption, qDisaster === true && styles.pillOptionActive]} onPress={() => setQDisaster(true)}><Text style={[styles.pillText, qDisaster === true && styles.pillTextActive]}>YES</Text></Pressable>
+                        <Pressable style={[styles.pillOption, qDisaster === false && styles.pillOptionActive]} onPress={() => setQDisaster(false)}><Text style={[styles.pillText, qDisaster === false && styles.pillTextActive]}>NO</Text></Pressable>
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={styles.qQuestionRow}>
-                    <Text style={styles.qQuestionText}>Are you comfortable working in rugged or stressful environments?</Text>
-                    <View style={styles.pillToggle}>
-                      <Pressable style={[styles.pillOption, qRugged === true && styles.pillOptionActive]} onPress={() => setQRugged(true)}><Text style={[styles.pillText, qRugged === true && styles.pillTextActive]}>YES</Text></Pressable>
-                      <Pressable style={[styles.pillOption, qRugged === false && styles.pillOptionActive]} onPress={() => setQRugged(false)}><Text style={[styles.pillText, qRugged === false && styles.pillTextActive]}>NO</Text></Pressable>
+                    <View style={styles.qQuestionRow}>
+                      <Text style={styles.qQuestionText}>Are you comfortable working in rugged or stressful environments?</Text>
+                      <View style={styles.pillToggle}>
+                        <Pressable style={[styles.pillOption, qRugged === true && styles.pillOptionActive]} onPress={() => setQRugged(true)}><Text style={[styles.pillText, qRugged === true && styles.pillTextActive]}>YES</Text></Pressable>
+                        <Pressable style={[styles.pillOption, qRugged === false && styles.pillOptionActive]} onPress={() => setQRugged(false)}><Text style={[styles.pillText, qRugged === false && styles.pillTextActive]}>NO</Text></Pressable>
+                      </View>
                     </View>
                   </View>
 
@@ -380,53 +390,55 @@ export default function VolunteerScreen() {
                     </View>
                   </View>
 
-                  {/* Availability & Logistics */}
-                  <Text style={[styles.qSectionTitle, { marginTop: 15 }]}>Availability & Logistics</Text>
-                  <View style={styles.qQuestionRow}>
-                    <Text style={styles.qQuestionText}>Do you have <Text style={{fontWeight: 'bold'}}>personal transportation</Text> to a disaster site?</Text>
-                    <View style={[styles.pillToggle, showErrors && qTransport === null && styles.errorBorder]}>
-                      <Pressable style={[styles.pillOption, qTransport === true && styles.pillOptionActive]} onPress={() => setQTransport(true)}><Text style={[styles.pillText, qTransport === true && styles.pillTextActive]}>YES</Text></Pressable>
-                      <Pressable style={[styles.pillOption, qTransport === false && styles.pillOptionActive]} onPress={() => setQTransport(false)}><Text style={[styles.pillText, qTransport === false && styles.pillTextActive]}>NO</Text></Pressable>
+                  {/* Availability & Logistics (Wrapped to match inner padding) */}
+                  <View style={{ paddingHorizontal: 20 }}>
+                    <Text style={[styles.qSectionTitle, { marginTop: 5 }]}>Availability & Logistics</Text>
+                    <View style={styles.qQuestionRow}>
+                      <Text style={styles.qQuestionText}>Do you have <Text style={{fontWeight: 'bold'}}>personal transportation</Text> to a disaster site?</Text>
+                      <View style={[styles.pillToggle, showErrors && qTransport === null && styles.errorBorder]}>
+                        <Pressable style={[styles.pillOption, qTransport === true && styles.pillOptionActive]} onPress={() => setQTransport(true)}><Text style={[styles.pillText, qTransport === true && styles.pillTextActive]}>YES</Text></Pressable>
+                        <Pressable style={[styles.pillOption, qTransport === false && styles.pillOptionActive]} onPress={() => setQTransport(false)}><Text style={[styles.pillText, qTransport === false && styles.pillTextActive]}>NO</Text></Pressable>
+                      </View>
                     </View>
-                  </View>
-                  
-                  <Text style={[styles.qQuestionText, {marginBottom: 8}]}>What is your typical mode of transportation? (Personal Vehicle, Public Transpo, etc.)</Text>
-                  <TextInput 
-                    style={[styles.transpoInput, showErrors && transportMode.trim() === '' && styles.errorBorder]}
-                    placeholder='"Type of Transportation"' placeholderTextColor="#999"
-                    value={transportMode} onChangeText={setTransportMode}
-                  />
+                    
+                    <Text style={[styles.qQuestionText, {marginBottom: 8}]}>What is your typical mode of transportation? (Personal Vehicle, Public Transpo, etc.)</Text>
+                    <TextInput 
+                      style={[styles.transpoInput, showErrors && transportMode.trim() === '' && styles.errorBorder]}
+                      placeholder='"Type of Transportation"' placeholderTextColor="#999"
+                      value={transportMode} onChangeText={setTransportMode}
+                    />
 
-                  {/* Volunteer Conduct */}
-                  <Text style={[styles.qSectionTitle, {marginTop: 25}]}>Volunteer Conduct & Confidentiality</Text>
-                  <View style={styles.conductChecksContainer}>
-                    <Pressable onPress={() => toggleConductCheck('conduct')} style={[styles.conductCheckCard, conductChecks.conduct && styles.conductCheckCardActive, showErrors && !conductChecks.conduct && styles.errorBorder]}>
-                      <View style={[styles.conductCheckboxSquare, conductChecks.conduct && styles.conductCheckboxActive]}>{conductChecks.conduct && <Text style={styles.conductCheckmark}>✓</Text>}</View>
-                      <Text style={styles.conductCheckLabel}>Do you agree to abide by the BayaniHub Volunteer Code of Conduct and treat aid recipients with dignity? (Mandatory)</Text>
-                    </Pressable>
-                    
-                    <Pressable onPress={() => toggleConductCheck('confidential')} style={[styles.conductCheckCard, conductChecks.confidential && styles.conductCheckCardActive, showErrors && !conductChecks.confidential && styles.errorBorder]}>
-                      <View style={[styles.conductCheckboxSquare, conductChecks.confidential && styles.conductCheckboxActive]}>{conductChecks.confidential && <Text style={styles.conductCheckmark}>✓</Text>}</View>
-                      <Text style={styles.conductCheckLabel}>Do you agree to maintain the strict confidentiality of all private information you access? (Mandatory)</Text>
-                    </Pressable>
-                    
-                    <Pressable onPress={() => toggleConductCheck('safety')} style={[styles.conductCheckCard, conductChecks.safety && styles.conductCheckCardActive, showErrors && !conductChecks.safety && styles.errorBorder]}>
-                      <View style={[styles.conductCheckboxSquare, conductChecks.safety && styles.conductCheckboxActive]}>{conductChecks.safety && <Text style={styles.conductCheckmark}>✓</Text>}</View>
-                      <Text style={styles.conductCheckLabel}>Do you understand and agree to follow all safety protocols and guidelines provided for each site? (Mandatory)</Text>
-                    </Pressable>
-                  </View>
+                    {/* Volunteer Conduct */}
+                    <Text style={[styles.qSectionTitle, {marginTop: 25}]}>Volunteer Conduct & Confidentiality</Text>
+                    <View style={styles.conductChecksContainer}>
+                      <Pressable onPress={() => toggleConductCheck('conduct')} style={[styles.conductCheckCard, conductChecks.conduct && styles.conductCheckCardActive, showErrors && !conductChecks.conduct && styles.errorBorder]}>
+                        <View style={[styles.conductCheckboxSquare, conductChecks.conduct && styles.conductCheckboxActive]}>{conductChecks.conduct && <Text style={styles.conductCheckmark}>✓</Text>}</View>
+                        <Text style={styles.conductCheckLabel}>Do you agree to abide by the BayaniHub Volunteer Code of Conduct and treat aid recipients with dignity? (Mandatory)</Text>
+                      </Pressable>
+                      
+                      <Pressable onPress={() => toggleConductCheck('confidential')} style={[styles.conductCheckCard, conductChecks.confidential && styles.conductCheckCardActive, showErrors && !conductChecks.confidential && styles.errorBorder]}>
+                        <View style={[styles.conductCheckboxSquare, conductChecks.confidential && styles.conductCheckboxActive]}>{conductChecks.confidential && <Text style={styles.conductCheckmark}>✓</Text>}</View>
+                        <Text style={styles.conductCheckLabel}>Do you agree to maintain the strict confidentiality of all private information you access? (Mandatory)</Text>
+                      </Pressable>
+                      
+                      <Pressable onPress={() => toggleConductCheck('safety')} style={[styles.conductCheckCard, conductChecks.safety && styles.conductCheckCardActive, showErrors && !conductChecks.safety && styles.errorBorder]}>
+                        <View style={[styles.conductCheckboxSquare, conductChecks.safety && styles.conductCheckboxActive]}>{conductChecks.safety && <Text style={styles.conductCheckmark}>✓</Text>}</View>
+                        <Text style={styles.conductCheckLabel}>Do you understand and agree to follow all safety protocols and guidelines provided for each site? (Mandatory)</Text>
+                      </Pressable>
+                    </View>
 
-                  <View style={{ marginTop: 25, flexDirection: 'column', gap: 10 }}>
-                    <Text style={styles.warningText}>Your contribution is valuable. Please complete all fields.</Text>
-                    {showErrors && !isStep3Valid && <Text style={[styles.errorText, {marginBottom: 10}]}>● Please address the missing fields above.</Text>}
-                    
-                    <View style={styles.step3ActionRow}>
-                      <Pressable style={({pressed}) => [styles.backBtnStep3, pressed && styles.btnPress]} onPress={() => setStep(2)}>
-                        <Text style={styles.backBtnTextStep3}>Back</Text>
-                      </Pressable>
-                      <Pressable style={({pressed}) => [styles.submitBtnStep3, pressed && styles.btnPress]} onPress={handleSubmitFinal}>
-                        <Text style={styles.submitBtnTextStep3}>Submit Assessment</Text>
-                      </Pressable>
+                    <View style={{ marginTop: 25, flexDirection: 'column', gap: 10 }}>
+                      <Text style={styles.warningText}>Your contribution is valuable. Please complete all fields.</Text>
+                      {showErrors && !isStep3Valid && <Text style={[styles.errorText, {marginBottom: 10}]}>● Please address the missing fields above.</Text>}
+                      
+                      <View style={styles.step3ActionRow}>
+                        <Pressable style={({pressed}) => [styles.backBtnStep3, pressed && styles.btnPress]} onPress={() => setStep(2)}>
+                          <Text style={styles.backBtnTextStep3}>Back</Text>
+                        </Pressable>
+                        <Pressable style={({pressed}) => [styles.submitBtnStep3, pressed && styles.btnPress]} onPress={handleSubmitFinal}>
+                          <Text style={styles.submitBtnTextStep3}>Submit Assessment</Text>
+                        </Pressable>
+                      </View>
                     </View>
                   </View>
 
@@ -443,7 +455,6 @@ export default function VolunteerScreen() {
                   <View style={styles.successHeaderRow}><Text style={styles.successHeaderText}>Success!</Text></View>
                   <View style={styles.successBody}>
                     
-                    {/* NEW STYLED CHECKMARK ICON */}
                     <View style={styles.checkmarkIconCircle}>
                       <Text style={styles.checkmarkIconText}>✓</Text>
                     </View>
@@ -455,26 +466,37 @@ export default function VolunteerScreen() {
                       <Text style={{fontWeight: 'bold'}}>Summary:</Text> {selectedRole ? selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1) : ''} Role ({selectedTime})
                     </Text>
 
-                    {/* NEW CROSS-SELL DONOR PROMPT */}
-                    <View style={{ marginTop: 40, width: '100%', alignItems: 'center', borderTopWidth: 1, borderColor: '#EEE', paddingTop: 25 }}>
-                      <Text style={styles.donorPromptText}>Do you want to be a Donor?</Text>
-                      
-                      <View style={{ flexDirection: 'column', gap: 12, width: '100%', marginTop: 20 }}>
+                    {/* CROSS-SELL DONOR PROMPT */}
+                    {!cameFromPledge ? (
+                      <View style={{ marginTop: 40, width: '100%', alignItems: 'center', borderTopWidth: 1, borderColor: '#EEE', paddingTop: 25 }}>
+                        <Text style={styles.donorPromptText}>Do you want to be a Donor?</Text>
+                        <View style={{ flexDirection: 'column', gap: 12, width: '100%', marginTop: 20 }}>
+                          <Pressable 
+                            style={({pressed}) => [styles.yesDonorBtn, pressed && styles.btnPress]} 
+                            onPress={() => router.push({ pathname: '/pledge', params: { fromVolunteer: 'true' } } as any)}
+                          >
+                            <Text style={styles.yesDonorBtnText}>Yes, I want to be a donor</Text>
+                          </Pressable>
+                          
+                          <Pressable 
+                            style={({pressed}) => [styles.noDonorBtn, pressed && styles.btnPress]} 
+                            onPress={() => router.push('/' as any)}
+                          >
+                            <Text style={styles.noDonorBtnText}>No, Return to Homepage</Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    ) : (
+                      // If they came from Pledge, skip the prompt and just show a return button
+                      <View style={{ marginTop: 20, width: '100%', alignItems: 'center', paddingTop: 25 }}>
                         <Pressable 
-                          style={({pressed}) => [styles.yesDonorBtn, pressed && styles.btnPress]} 
-                          onPress={() => router.push('/pledge' as any)}
+                          style={({pressed}) => [styles.doneBtn, pressed && styles.btnPress]} 
+                          onPress={() => router.push('/')}
                         >
-                          <Text style={styles.yesDonorBtnText}>Yes, I want to be a donor</Text>
-                        </Pressable>
-                        
-                        <Pressable 
-                          style={({pressed}) => [styles.noDonorBtn, pressed && styles.btnPress]} 
-                          onPress={() => router.push('/' as any)}
-                        >
-                          <Text style={styles.noDonorBtnText}>No, Return to Homepage</Text>
+                          <Text style={styles.doneBtnText}>Return to Homepage</Text>
                         </Pressable>
                       </View>
-                    </View>
+                    )}
 
                   </View>
                 </View>
@@ -491,22 +513,24 @@ export default function VolunteerScreen() {
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
   
   // NAVBAR
   navBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: 90, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E5E7EB', paddingTop: 35 },
-  navLeft: { flexDirection: 'row', alignItems: 'center' },
-  logoImage: { width: 45, height: 45 },
-  navRight: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+  navLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  brandName: { fontSize: 18, fontWeight: 'normal', color: '#111827' },
+  navLinks: { flexDirection: 'row', gap: 15 },
+  navLink: { fontSize: 13, color: '#4B5563', fontWeight: '600' },
+  logoImage: { width: 35, height: 35 },
+  navRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconButton: { padding: 5 },
-  navIcon: { width: 28, height: 28, opacity: 0.7 },
+  navIcon: { width: 24, height: 24, opacity: 0.7 },
   userProfile: { flexDirection: 'row', alignItems: 'center' },
 
-  // BODY
-  pageBody: { flex: 1, minHeight: height - 90, position: 'relative', alignItems: 'center', paddingVertical: 20 },
-  bgImage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
-  bgOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#0F172A', opacity: 0.75 },
-  contentWrapper: { width: '95%', backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20, flex: 1, elevation: 10 },
+  // CLEANED UP BODY (No Image)
+  pageBody: { flex: 1, minHeight: height - 90, backgroundColor: '#F9FAFB', alignItems: 'center', paddingVertical: 20 },
+  contentWrapper: { width: '95%', backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB', padding: 20, flex: 1 },
+  
   headerBanner: { backgroundColor: '#4273B8', borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 15 },
   bannerText: { color: '#FFFFFF', fontSize: 22, fontWeight: 'bold' },
 
@@ -517,7 +541,7 @@ const styles = StyleSheet.create({
   nextStepBtn: { backgroundColor: '#4273B8', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 10 },
   nextStepBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
 
-  cardOutline: { backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: '#CCCCCC', borderRadius: 12, padding: 20 },
+  cardOutline: { backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 12, padding: 20 },
   cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#111', marginBottom: 10 },
   progressRow: { flexDirection: 'row', gap: 8, marginBottom: 5 },
   progressBar: { flex: 1, height: 8, backgroundColor: '#E5E7EB', borderRadius: 4 },
@@ -577,18 +601,21 @@ const styles = StyleSheet.create({
   checkmark: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
   checkboxLabel: { fontSize: 13, flex: 1 },
 
-  // STEP 3 QUESTIONNAIRE (UPDATED FOR LONG TEXT)
+  // STEP 3 QUESTIONNAIRE (ALIGNED & CLEANED)
   qSectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12 },
-  qQuestionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
+  // UPDATED: Added alignItems center to ensure pills and text line up vertically
+  qQuestionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   qQuestionText: { fontSize: 13, flex: 1, paddingRight: 10, lineHeight: 20, color: '#111' },
   
   pillToggle: { flexDirection: 'row', gap: 8 },
-  pillOption: { paddingVertical: 6, paddingHorizontal: 15, backgroundColor: '#E5E7EB', borderRadius: 15 },
+  // UPDATED: Added fixed width and text alignment to match the web app
+  pillOption: { width: 70, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E5E7EB', borderRadius: 20 },
   pillOptionActive: { backgroundColor: '#4273B8' },
-  pillText: { fontSize: 12, fontWeight: 'bold' },
+  pillText: { fontSize: 12, fontWeight: 'bold', color: '#4B5563' },
   pillTextActive: { color: '#FFFFFF' },
 
-  healthBannerClean: { backgroundColor: '#E3F2E3', padding: 20, borderRadius: 12, marginVertical: 15 },
+  // The green box inherently has 20px of padding, which indented its questions
+  healthBannerClean: { backgroundColor: '#EAF5EA', padding: 20, borderRadius: 12, marginVertical: 15 },
   healthDesc: { fontSize: 12, color: '#22543D', marginBottom: 15, fontStyle: 'italic' },
   
   transpoInput: { backgroundColor: '#E5E7EB', padding: 12, borderRadius: 8, marginBottom: 10, fontSize: 13 },
@@ -615,25 +642,8 @@ const styles = StyleSheet.create({
   successHeaderText: { color: '#FFFFFF', fontSize: 20, fontWeight: 'bold' },
   successBody: { padding: 25, alignItems: 'center' },
   
-  // NEW STYLED CHECKMARK ICON
-  checkmarkIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F0FDF4',
-    borderWidth: 3,
-    borderColor: '#2D8A61',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    elevation: 2,
-  },
-  checkmarkIconText: {
-    color: '#2D8A61',
-    fontSize: 40,
-    fontWeight: 'bold',
-    marginTop: -3,
-  },
+  checkmarkIconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#F0FDF4', borderWidth: 3, borderColor: '#2D8A61', alignItems: 'center', justifyContent: 'center', marginBottom: 20, elevation: 2 },
+  checkmarkIconText: { color: '#2D8A61', fontSize: 40, fontWeight: 'bold', marginTop: -3 },
 
   thankYouTitle: { fontSize: 22, fontWeight: 'bold' },
   successDescText: { fontSize: 13, textAlign: 'center', marginVertical: 10 },
