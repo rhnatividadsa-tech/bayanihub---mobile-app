@@ -1,85 +1,71 @@
-# 🦸‍♂️ BayaniHub Mobile App
+# BayaniHub Mobile App
 
-Welcome to the **BayaniHub Mobile App** repository! This is a React Native mobile application built with **Expo** and **TypeScript**. It serves as the mobile companion to the BayaniHub platform, allowing users to pledge donations and register as volunteers for disaster response and relief efforts.
+The mobile platform for the BayaniHub disaster response and resource management engine.
+This application leverages **Expo (React Native)** for the frontend and a local **NestJS** backend integrated with **Supabase**.
+
+## Getting Started
+
+Because this application enforces an Authentication flow before accessing the dashboard, both the frontend mobile app and the backend API must be running simultaneously on your network.
+
+### 1. Start the NestJS Backend
+
+The backend must be running for the mobile app to successfully authenticate users and create accounts.
+
+1. Open a new terminal.
+2. Navigate into the backend directory:
+   ```bash
+   cd backend
+   ```
+3. Install dependencies (if you haven't already):
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   npm run start:dev
+   ```
+   *The backend should now be running on `http://localhost:3001`.*
+
+### 2. Configure the Mobile API Connection
+
+Before starting the Expo app, you must tell the app where to find the backend. This differs depending on whether you are using a Physical Phone or an Emulator.
+
+Open `src/lib/api.ts` and update `API_BASE`:
+
+**If testing on a Physical Phone via Wi-Fi:**
+Find your computer's local Wi-Fi IP Address (e.g., `192.168.1.x`) and use it:
+```typescript
+// Replace 192.168.1.6 with YOUR computer's IPv4 address
+export const API_BASE = "http://192.168.1.6:3001/api/v1";
+```
+
+**If testing on an Android Emulator:**
+Use the loopback IP designed for Android emulators:
+```typescript
+export const API_BASE = "http://10.0.2.2:3001/api/v1";
+```
+
+### 3. Start the Mobile App
+
+1. Open a *second* terminal.
+2. Ensure you are in the root directory of the project (`bayanihub---mobile-app`).
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the Expo development server:
+   ```bash
+   npx expo start
+   ```
+5. Scan the QR code with your **Expo Go** app (iOS/Android), or press `a` to open it in a running Android Emulator.
 
 ---
 
-## 📋 Prerequisites
+## Troubleshooting
 
-Before you clone and run this project, make sure you have the following installed on your machine:
-
-1. **[Node.js](https://nodejs.org/)** (LTS version recommended)
-2. **[Git](https://git-scm.com/)**
-3. **A Code Editor** (We highly recommend [Visual Studio Code](https://code.visualstudio.com/))
-4. **An Emulator or Physical Device**:
-   * **Android**: Install [Android Studio](https://developer.android.com/studio) and set up an Android Emulator.
-   * **iOS (Mac only)**: Install Xcode from the Mac App Store and set up an iOS Simulator.
-   * **Physical Device**: Download the **Expo Go** app from the Google Play Store or Apple App Store.
-
----
-
-## 🚀 Getting Started
-
-Follow these steps to get the project running locally on your machine.
-
-### 1. Clone the repository
-Open your terminal and clone the project to your local machine:
-```bash
-git clone <YOUR_GITHUB_REPO_URL_HERE>
-2. Navigate to the project directory
-Bash
-cd BayaniHubMobile
-3. Install dependencies
-Install all the required packages using npm:
-
-Bash
-npm install
-📱 Running the App
-Once your dependencies are installed, you can start the local Expo development server.
-
-1. Start the Expo Server
-Run the following command in your terminal:
-
-Bash
-npx expo start
-Note: This will open a Metro Bundler interface in your terminal and display a large QR code.
-
-2. Open the App on your preferred device:
-For Android Emulator: Press a in the terminal.
-
-For iOS Simulator: Press i in the terminal (Mac only).
-
-For Physical Phone: Open the Expo Go app on your phone and scan the QR code displayed in the terminal.
-
-📁 Project Structure
-This project uses Expo Router for file-based navigation.
-
-Plaintext
-BayaniHubMobile/
-├── app/                  # Main application screens (Routing)
-│   ├── index.tsx         # Homepage
-│   ├── pledge.tsx        # Pledge Donation Screen
-│   └── volunteer.tsx     # Volunteer Registration Screen
-├── assets/               # Images, fonts, and icons
-├── declarations.d.ts     # TypeScript declarations for assets/routing
-├── package.json          # Project dependencies
-└── tsconfig.json         # TypeScript configuration
-🛠️ Troubleshooting & Common Issues
-1. "White Screen" or App not updating
-If the emulator shows a white screen or doesn't reflect your latest code changes, the Expo cache might be stuck. Stop the server (Ctrl + C) and run the clean start command:
-
-Bash
-npx expo start -c
-
-2. Red Squiggly Lines under expo-router in VS Code
-Because this project uses strict TypeScript, VS Code sometimes takes a moment to recognize the routing types. This is usually a "ghost error" if the app still runs fine on the emulator.
-
-The Fix: Press Ctrl + Shift + P (or Cmd + Shift + P on Mac), type Restart TS Server, and hit Enter.
-
-3. Image Import Errors
-If TypeScript complains that it cannot find image modules (e.g., Cannot find module '../assets/logo.png'), ensure that the declarations.d.ts file exists in the root directory and contains:
-
-TypeScript
-declare module "*.png";
-declare module "*.jpg";
-declare module "expo-router";
+- **"Network Request Failed" during Login/Sign up:**
+  This means the mobile app cannot reach the backend. Check that your backend terminal says it is running. If you're on a physical phone, double-check that `API_BASE` in `src/lib/api.ts` contains your computer's exact Wi-Fi IP address, and ensure your phone is connected to the *same* Wi-Fi network as your computer.
+- **"Cannot find SecureStore":**
+  Because the app uses `expo-secure-store` (a Native Module), you *must* completely restart `npx expo start` if it was installed while the server was running.
+- **Red squiggly lines / TS Errors on Frontend code:**
+  Make sure your `tsconfig.json` at the root of the project contains `"exclude": ["backend"]`. Otherwise, the React Native TS compiler will improperly try to compile your NestJS files.
